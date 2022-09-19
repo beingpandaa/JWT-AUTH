@@ -5,11 +5,7 @@ const cookieParser=require('cookie-parser');
 const db=require('./config/mongoose')
 const passport=require('passport');
 const passportJWT=require('./config/passport-jwt')
-app.set('view engine','ejs');
-app.set('views','./views');
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
 //use express router
 app.use('/', require('./routes'));
 
