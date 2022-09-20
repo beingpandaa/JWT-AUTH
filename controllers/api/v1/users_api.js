@@ -1,12 +1,13 @@
 const User=require('../../../models/user');
 const jwt=require('jsonwebtoken');
+const bcrypt=require('bcrypt')
 module.exports.create= function(req,res){
     
-    if (req.body.password !=req.body.confirm_password){
-        return res.json(422,{   //error code 422: invalid input
-            message:"User pass and confirm pass is not matching"
-        });
-    }
+    // if (req.body.password !=req.body.confirm_password){
+    //     return res.json(422,{   //error code 422: invalid input
+    //         message:"User pass and confirm pass is not matching"
+    //     });
+    // }
     User.findOne({email:req.body.email},function(err,user){
        
         if(err){
@@ -16,6 +17,7 @@ module.exports.create= function(req,res){
         });
         }
         if (!user){
+
             User.create(req.body,function(err,user){
                 if(err){
                     console.log('********',err);
@@ -23,6 +25,7 @@ module.exports.create= function(req,res){
                     message:"Error in finding the user"
                 });
                 }
+                user.save();
                 console.log('user created');
                 return res.json(200,{
                     message:'User created',
@@ -41,14 +44,21 @@ module.exports.create= function(req,res){
 }
 module.exports.createSession=async function(req,res){
     try{
-        console.log(req.body.email)
+        // console.log(req.body.email)
         let user=await User.findOne({email:req.body.email});
         
-        if (!user || user.password!=req.body.password){
+        const match = await bcrypt.compare(req.body.password, user.password);
+        console.log(match);
+        if (!user || match==false){
+            console.log(match);
+            
+            console.log("******")
             return res.json(422,{   //error code 422: invalid input
                 message:"Invalid username or password"
             });
         }
+        
+        
         return res.json(200,{
             message:'Sign in successful',
             data:{
@@ -102,6 +112,7 @@ module.exports.userinfo=function(req,res){
 }
 
 module.exports.update=function(req,res){
+    console.log(req.user.id)
     if (req.user.id==req.params.id){
         User.findById(req.params.id,function(err,user){
             if (err){
